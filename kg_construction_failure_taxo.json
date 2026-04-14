@@ -1,0 +1,1219 @@
+{
+    "taxonomy_name": "knowledge_graph_construction_failure_taxonomy",
+    "version": "1.0",
+    "top_level_domains": [
+      {
+        "id": "mention_detection",
+        "label": "Mention Detection",
+        "subproblems": [
+          {
+            "id": "span_extraction",
+            "label": "Span Extraction",
+            "failure_modes": [
+              {
+                "id": "boundary_error",
+                "failure_mode": "Extracts partial or oversized mention",
+                "typical_causes": [
+                  "punctuation ambiguity",
+                  "nested entities",
+                  "tokenization artifacts",
+                  "domain-specific naming patterns"
+                ],
+                "impact": [
+                  "wrong node creation",
+                  "failed entity linking",
+                  "relation attachment errors"
+                ],
+                "mitigations": [
+                  "boundary rules",
+                  "span overlap resolution",
+                  "domain gazetteers",
+                  "candidate span reranking"
+                ],
+                "llm_usage": {
+                  "recommended_role": "candidate_generator_or_reranker",
+                  "risks": [
+                    "free-form span drift",
+                    "inconsistent boundaries"
+                  ]
+                },
+                "validation": [
+                  "exact span match",
+                  "partial span match",
+                  "human audit on ambiguous spans"
+                ]
+              },
+              {
+                "id": "missed_mention",
+                "failure_mode": "Entity mention not extracted",
+                "typical_causes": [
+                  "unseen jargon",
+                  "noisy text",
+                  "weak recall thresholds"
+                ],
+                "impact": [
+                  "missing nodes",
+                  "missing edges",
+                  "broken coreference chains"
+                ],
+                "mitigations": [
+                  "recall-oriented extraction pass",
+                  "gazetteer augmentation",
+                  "fuzzy lookup",
+                  "chunk overlap"
+                ],
+                "llm_usage": {
+                  "recommended_role": "long_tail_candidate_recovery",
+                  "risks": [
+                    "hallucinated mentions"
+                  ]
+                },
+                "validation": [
+                  "mention recall"
+                ]
+              },
+              {
+                "id": "spurious_mention",
+                "failure_mode": "Non-entity extracted as entity",
+                "typical_causes": [
+                  "capitalization bias",
+                  "overgeneralization",
+                  "weak type constraints"
+                ],
+                "impact": [
+                  "graph pollution",
+                  "bad candidate links"
+                ],
+                "mitigations": [
+                  "type-aware filtering",
+                  "blacklist patterns",
+                  "confidence thresholding"
+                ],
+                "llm_usage": {
+                  "recommended_role": "semantic_filter",
+                  "risks": [
+                    "false semantic confidence"
+                  ]
+                },
+                "validation": [
+                  "precision",
+                  "false positive review"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "entity_typing",
+        "label": "Entity Typing",
+        "subproblems": [
+          {
+            "id": "type_assignment",
+            "label": "Type Assignment",
+            "failure_modes": [
+              {
+                "id": "wrong_coarse_type",
+                "failure_mode": "Wrong coarse entity type",
+                "typical_causes": [
+                  "polysemy",
+                  "short local context"
+                ],
+                "impact": [
+                  "wrong ontology branch",
+                  "invalid relations"
+                ],
+                "mitigations": [
+                  "closed label set",
+                  "type priors",
+                  "context-expanded classification"
+                ],
+                "llm_usage": {
+                  "recommended_role": "type_suggester",
+                  "risks": [
+                    "semantic overreach"
+                  ]
+                },
+                "validation": [
+                  "type accuracy"
+                ]
+              },
+              {
+                "id": "wrong_fine_type",
+                "failure_mode": "Wrong fine-grained type",
+                "typical_causes": [
+                  "domain ambiguity",
+                  "inadequate schema examples"
+                ],
+                "impact": [
+                  "bad downstream reasoning"
+                ],
+                "mitigations": [
+                  "hierarchical typing",
+                  "domain ontology",
+                  "specialized classifiers"
+                ],
+                "llm_usage": {
+                  "recommended_role": "fine_type_disambiguator",
+                  "risks": [
+                    "ontology drift"
+                  ]
+                },
+                "validation": [
+                  "hierarchical F1"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "entity_normalization_and_linking",
+        "label": "Entity Normalization and Linking",
+        "subproblems": [
+          {
+            "id": "canonicalization",
+            "label": "Canonicalization",
+            "failure_modes": [
+              {
+                "id": "surface_variation_split",
+                "failure_mode": "Same entity kept as multiple nodes",
+                "typical_causes": [
+                  "abbreviations",
+                  "diacritics",
+                  "punctuation",
+                  "transliteration"
+                ],
+                "impact": [
+                  "duplicate nodes",
+                  "fragmented evidence"
+                ],
+                "mitigations": [
+                  "normalized forms",
+                  "alias tables",
+                  "fuzzy matching",
+                  "phonetic matching where appropriate"
+                ],
+                "llm_usage": {
+                  "recommended_role": "alias_candidate_generator",
+                  "risks": [
+                    "invented aliases"
+                  ]
+                },
+                "validation": [
+                  "duplicate rate"
+                ]
+              },
+              {
+                "id": "over_normalization_merge",
+                "failure_mode": "Distinct entities merged due to aggressive normalization",
+                "typical_causes": [
+                  "lossy canonicalization",
+                  "weak secondary evidence"
+                ],
+                "impact": [
+                  "identity corruption"
+                ],
+                "mitigations": [
+                  "preserve raw and normalized values",
+                  "secondary evidence requirements",
+                  "reversible merge policy"
+                ],
+                "llm_usage": {
+                  "recommended_role": "merge_risk_flagger",
+                  "risks": [
+                    "plausibility bias"
+                  ]
+                },
+                "validation": [
+                  "merge precision"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "entity_linking",
+            "label": "Entity Linking",
+            "failure_modes": [
+              {
+                "id": "alias_ambiguity",
+                "failure_mode": "Mention linked to wrong canonical entity",
+                "typical_causes": [
+                  "same surface form for multiple entities",
+                  "insufficient context",
+                  "type mismatch"
+                ],
+                "impact": [
+                  "global graph corruption"
+                ],
+                "mitigations": [
+                  "candidate generation plus reranking",
+                  "type filters",
+                  "context-aware disambiguation",
+                  "abstain option"
+                ],
+                "llm_usage": {
+                  "recommended_role": "candidate_reranker",
+                  "risks": [
+                    "overconfident wrong choice"
+                  ]
+                },
+                "validation": [
+                  "linking accuracy"
+                ]
+              },
+              {
+                "id": "nil_failure",
+                "failure_mode": "Unknown entity forced to existing node",
+                "typical_causes": [
+                  "closed-world bias",
+                  "no NIL path"
+                ],
+                "impact": [
+                  "false links"
+                ],
+                "mitigations": [
+                  "explicit NIL class",
+                  "new-node creation policy"
+                ],
+                "llm_usage": {
+                  "recommended_role": "insufficient_evidence_detector",
+                  "risks": [
+                    "forced completion"
+                  ]
+                },
+                "validation": [
+                  "NIL precision",
+                  "NIL recall"
+                ]
+              },
+              {
+                "id": "granularity_mismatch",
+                "failure_mode": "Mention linked at wrong level of granularity",
+                "typical_causes": [
+                  "unclear ontology granularity",
+                  "ambiguous source wording"
+                ],
+                "impact": [
+                  "distorted hierarchical structure"
+                ],
+                "mitigations": [
+                  "granularity policy",
+                  "parent-child representation",
+                  "defer hard merge when uncertain"
+                ],
+                "llm_usage": {
+                  "recommended_role": "granularity_explainer",
+                  "risks": [
+                    "semantic smoothing"
+                  ]
+                },
+                "validation": [
+                  "expert audit on ambiguous cases"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "coreference",
+        "label": "Coreference Resolution",
+        "subproblems": [
+          {
+            "id": "pronominal_coreference",
+            "label": "Pronominal Coreference",
+            "failure_modes": [
+              {
+                "id": "pronoun_ambiguity",
+                "failure_mode": "Pronoun resolved to wrong antecedent",
+                "typical_causes": [
+                  "multiple antecedent candidates",
+                  "weak discourse salience model"
+                ],
+                "impact": [
+                  "wrong facts",
+                  "broken chains"
+                ],
+                "mitigations": [
+                  "antecedent scoring",
+                  "agreement constraints",
+                  "type filters",
+                  "discourse salience features"
+                ],
+                "llm_usage": {
+                  "recommended_role": "contextual_resolver",
+                  "risks": [
+                    "salience hallucination"
+                  ]
+                },
+                "validation": [
+                  "coreference F1"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "nominal_coreference",
+            "label": "Nominal Coreference",
+            "failure_modes": [
+              {
+                "id": "descriptor_mismatch",
+                "failure_mode": "Equivalent noun phrases not linked",
+                "typical_causes": [
+                  "lexical variation",
+                  "weak semantic matching"
+                ],
+                "impact": [
+                  "entity fragmentation"
+                ],
+                "mitigations": [
+                  "semantic similarity",
+                  "discourse context",
+                  "type compatibility",
+                  "cluster reranking"
+                ],
+                "llm_usage": {
+                  "recommended_role": "paraphrase_matcher",
+                  "risks": [
+                    "false paraphrase equivalence"
+                  ]
+                },
+                "validation": [
+                  "cluster quality",
+                  "pairwise coref metrics"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "event_and_abstract_coreference",
+            "label": "Event and Abstract Coreference",
+            "failure_modes": [
+              {
+                "id": "event_split",
+                "failure_mode": "Same event kept as several event nodes",
+                "typical_causes": [
+                  "fuzzy event boundaries",
+                  "argument variation"
+                ],
+                "impact": [
+                  "fragmented event graph"
+                ],
+                "mitigations": [
+                  "event templates",
+                  "argument overlap scoring",
+                  "temporal proximity constraints"
+                ],
+                "llm_usage": {
+                  "recommended_role": "event_comparator",
+                  "risks": [
+                    "event fusion overreach"
+                  ]
+                },
+                "validation": [
+                  "event coref score"
+                ]
+              },
+              {
+                "id": "abstract_reference_error",
+                "failure_mode": "Abstract phrase linked to wrong event or proposition",
+                "typical_causes": [
+                  "referent is not a concrete noun",
+                  "discourse complexity"
+                ],
+                "impact": [
+                  "wrong causal or explanatory edges"
+                ],
+                "mitigations": [
+                  "proposition representation",
+                  "discourse parsing",
+                  "event-level antecedent scoring"
+                ],
+                "llm_usage": {
+                  "recommended_role": "abstract_antecedent_identifier",
+                  "risks": [
+                    "invented discourse bridges"
+                  ]
+                },
+                "validation": [
+                  "targeted abstract-coref benchmark"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "special_cases",
+            "label": "Special Cases",
+            "failure_modes": [
+              {
+                "id": "split_antecedent_failure",
+                "failure_mode": "Group reference mapped to one entity instead of a set",
+                "typical_causes": [
+                  "single-antecedent assumption"
+                ],
+                "impact": [
+                  "participant loss"
+                ],
+                "mitigations": [
+                  "set-valued antecedent representation"
+                ],
+                "llm_usage": {
+                  "recommended_role": "composite_referent_suggester",
+                  "risks": [
+                    "spurious grouping"
+                  ]
+                },
+                "validation": [
+                  "set-match accuracy"
+                ]
+              },
+              {
+                "id": "cataphora_failure",
+                "failure_mode": "Forward reference not resolved",
+                "typical_causes": [
+                  "left-to-right processing bias"
+                ],
+                "impact": [
+                  "local inconsistency"
+                ],
+                "mitigations": [
+                  "bidirectional processing",
+                  "deferred resolution"
+                ],
+                "llm_usage": {
+                  "recommended_role": "full-sentence resolver",
+                  "risks": [
+                    "premature commitment"
+                  ]
+                },
+                "validation": [
+                  "cataphora-specific evaluation"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "relation_extraction",
+        "label": "Relation Extraction",
+        "subproblems": [
+          {
+            "id": "predicate_classification",
+            "label": "Predicate Classification",
+            "failure_modes": [
+              {
+                "id": "wrong_relation_type",
+                "failure_mode": "Wrong predicate assigned",
+                "typical_causes": [
+                  "weak schema grounding",
+                  "semantic similarity between predicates"
+                ],
+                "impact": [
+                  "false semantics"
+                ],
+                "mitigations": [
+                  "closed predicate set",
+                  "contrastive examples",
+                  "negative labels"
+                ],
+                "llm_usage": {
+                  "recommended_role": "closed_set_classifier",
+                  "risks": [
+                    "predicate invention"
+                  ]
+                },
+                "validation": [
+                  "relation F1"
+                ]
+              },
+              {
+                "id": "directionality_error",
+                "failure_mode": "Subject and object inverted",
+                "typical_causes": [
+                  "parse failure",
+                  "role confusion"
+                ],
+                "impact": [
+                  "fact inversion"
+                ],
+                "mitigations": [
+                  "dependency cues",
+                  "semantic role labeling",
+                  "directional templates"
+                ],
+                "llm_usage": {
+                  "recommended_role": "semantic_plausibility_checker",
+                  "risks": [
+                    "world-knowledge override"
+                  ]
+                },
+                "validation": [
+                  "directional accuracy"
+                ]
+              },
+              {
+                "id": "negation_speculation_miss",
+                "failure_mode": "Negated or speculative relation stored as factual",
+                "typical_causes": [
+                  "negation cues ignored",
+                  "modality not modeled"
+                ],
+                "impact": [
+                  "dangerous false facts"
+                ],
+                "mitigations": [
+                  "negation detection",
+                  "modality fields",
+                  "certainty-aware edge types"
+                ],
+                "llm_usage": {
+                  "recommended_role": "modality_classifier",
+                  "risks": [
+                    "flattening certainty distinctions"
+                  ]
+                },
+                "validation": [
+                  "factuality accuracy"
+                ]
+              },
+              {
+                "id": "implicit_relation_overreach",
+                "failure_mode": "Model invents unstated relation",
+                "typical_causes": [
+                  "LLM prior knowledge leakage",
+                  "helpfulness bias"
+                ],
+                "impact": [
+                  "hallucinated edges"
+                ],
+                "mitigations": [
+                  "evidence-span requirement",
+                  "abstain option",
+                  "candidate-only relation selection"
+                ],
+                "llm_usage": {
+                  "recommended_role": "classifier_over_candidates_not_generator",
+                  "risks": [
+                    "unsupported inference"
+                  ]
+                },
+                "validation": [
+                  "support-span match"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "event_extraction",
+        "label": "Event Extraction and Modeling",
+        "subproblems": [
+          {
+            "id": "event_state_and_arguments",
+            "label": "Event State and Arguments",
+            "failure_modes": [
+              {
+                "id": "static_dynamic_collapse",
+                "failure_mode": "Planned or attempted event stored as completed fact",
+                "typical_causes": [
+                  "event state not represented"
+                ],
+                "impact": [
+                  "wrong world model"
+                ],
+                "mitigations": [
+                  "event status attribute",
+                  "planned_attempted_completed distinction"
+                ],
+                "llm_usage": {
+                  "recommended_role": "status_classifier",
+                  "risks": [
+                    "speculative certainty inflation"
+                  ]
+                },
+                "validation": [
+                  "status accuracy"
+                ]
+              },
+              {
+                "id": "role_omission",
+                "failure_mode": "Missing participants or arguments",
+                "typical_causes": [
+                  "sparse text",
+                  "weak slot filling"
+                ],
+                "impact": [
+                  "low utility event nodes"
+                ],
+                "mitigations": [
+                  "argument slot extraction",
+                  "optional role policy",
+                  "multi-pass enrichment"
+                ],
+                "llm_usage": {
+                  "recommended_role": "slot_filler_with_evidence",
+                  "risks": [
+                    "invented arguments"
+                  ]
+                },
+                "validation": [
+                  "argument completeness"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "temporal_reasoning",
+        "label": "Temporal Reasoning",
+        "subproblems": [
+          {
+            "id": "time_grounding",
+            "label": "Time Grounding",
+            "failure_modes": [
+              {
+                "id": "missing_timestamp",
+                "failure_mode": "Fact stored without time context",
+                "typical_causes": [
+                  "no temporal extraction stage"
+                ],
+                "impact": [
+                  "false contradictions",
+                  "stale facts treated as current"
+                ],
+                "mitigations": [
+                  "document-time capture",
+                  "local temporal expression extraction"
+                ],
+                "llm_usage": {
+                  "recommended_role": "relative_time_normalizer",
+                  "risks": [
+                    "wrong anchor time"
+                  ]
+                },
+                "validation": [
+                  "temporal coverage"
+                ]
+              },
+              {
+                "id": "wrong_validity_interval",
+                "failure_mode": "Temporary relation stored as timeless",
+                "typical_causes": [
+                  "triple-only representation"
+                ],
+                "impact": [
+                  "semantic drift"
+                ],
+                "mitigations": [
+                  "valid_from and valid_to fields",
+                  "versioned edges"
+                ],
+                "llm_usage": {
+                  "recommended_role": "interval_suggester",
+                  "risks": [
+                    "invented dates"
+                  ]
+                },
+                "validation": [
+                  "temporal consistency checks"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ontology_and_schema",
+        "label": "Ontology and Schema",
+        "subproblems": [
+          {
+            "id": "schema_governance",
+            "label": "Schema Governance",
+            "failure_modes": [
+              {
+                "id": "predicate_duplication",
+                "failure_mode": "Multiple predicates for same semantics",
+                "typical_causes": [
+                  "ungoverned schema growth"
+                ],
+                "impact": [
+                  "fragmented querying",
+                  "hard analytics"
+                ],
+                "mitigations": [
+                  "canonical predicate registry",
+                  "schema review",
+                  "mapping layer"
+                ],
+                "llm_usage": {
+                  "recommended_role": "predicate_mapper",
+                  "risks": [
+                    "semantic oversmoothing"
+                  ]
+                },
+                "validation": [
+                  "schema conformance"
+                ]
+              },
+              {
+                "id": "instance_type_confusion",
+                "failure_mode": "Instances, classes, and attributes mixed",
+                "typical_causes": [
+                  "weak conceptual modeling"
+                ],
+                "impact": [
+                  "invalid graph semantics"
+                ],
+                "mitigations": [
+                  "ontology constraints",
+                  "SHACL or similar validation",
+                  "modeling review"
+                ],
+                "llm_usage": {
+                  "recommended_role": "schema_review_assistant",
+                  "risks": [
+                    "plausible but invalid mapping"
+                  ]
+                },
+                "validation": [
+                  "constraint violation count"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "deduplication_and_consistency",
+        "label": "Deduplication and Consistency",
+        "subproblems": [
+          {
+            "id": "graph_hygiene",
+            "label": "Graph Hygiene",
+            "failure_modes": [
+              {
+                "id": "duplicate_edge_proliferation",
+                "failure_mode": "Same edge added multiple times",
+                "typical_causes": [
+                  "overlapping chunks",
+                  "paraphrased duplicate evidence"
+                ],
+                "impact": [
+                  "bloated graph",
+                  "distorted confidence"
+                ],
+                "mitigations": [
+                  "edge hashing",
+                  "source-aware aggregation",
+                  "evidence grouping"
+                ],
+                "llm_usage": {
+                  "recommended_role": "paraphrase_grouper",
+                  "risks": [
+                    "over-grouping"
+                  ]
+                },
+                "validation": [
+                  "duplicate ratio"
+                ]
+              },
+              {
+                "id": "contradictory_merge",
+                "failure_mode": "Merged node inherits incompatible facts",
+                "typical_causes": [
+                  "weak merge logic"
+                ],
+                "impact": [
+                  "hidden contradictions"
+                ],
+                "mitigations": [
+                  "reversible merges",
+                  "evidence quorum",
+                  "post-merge contradiction scan"
+                ],
+                "llm_usage": {
+                  "recommended_role": "merge_risk_scorer",
+                  "risks": [
+                    "surface-level reassurance"
+                  ]
+                },
+                "validation": [
+                  "contradiction density"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "provenance_conflict_and_confidence",
+        "label": "Provenance, Conflict, and Confidence",
+        "subproblems": [
+          {
+            "id": "provenance_tracking",
+            "label": "Provenance Tracking",
+            "failure_modes": [
+              {
+                "id": "missing_provenance",
+                "failure_mode": "Edge or node has no evidence trail",
+                "typical_causes": [
+                  "pipeline shortcuts"
+                ],
+                "impact": [
+                  "no auditability",
+                  "no debugging path"
+                ],
+                "mitigations": [
+                  "mandatory provenance fields",
+                  "source span IDs",
+                  "document metadata retention"
+                ],
+                "llm_usage": {
+                  "recommended_role": "support_span_locator",
+                  "risks": [
+                    "wrong citation span"
+                  ]
+                },
+                "validation": [
+                  "provenance completeness"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "conflict_handling",
+            "label": "Conflict Handling",
+            "failure_modes": [
+              {
+                "id": "conflict_suppression",
+                "failure_mode": "One source claim overwrites another conflicting claim",
+                "typical_causes": [
+                  "single-truth storage design"
+                ],
+                "impact": [
+                  "epistemic loss"
+                ],
+                "mitigations": [
+                  "claim-level storage",
+                  "source-specific confidence",
+                  "time-sensitive resolution"
+                ],
+                "llm_usage": {
+                  "recommended_role": "conflict_summarizer",
+                  "risks": [
+                    "premature forced resolution"
+                  ]
+                },
+                "validation": [
+                  "conflict retention rate"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "confidence_calibration",
+            "label": "Confidence Calibration",
+            "failure_modes": [
+              {
+                "id": "miscalibrated_confidence",
+                "failure_mode": "Confidence scores do not reflect real correctness",
+                "typical_causes": [
+                  "uncalibrated model outputs",
+                  "heterogeneous extractors"
+                ],
+                "impact": [
+                  "unsafe thresholding",
+                  "bad human review prioritization"
+                ],
+                "mitigations": [
+                  "post-hoc calibration",
+                  "per-source priors",
+                  "separate model confidence from graph confidence"
+                ],
+                "llm_usage": {
+                  "recommended_role": "weak feature only",
+                  "risks": [
+                    "self-confidence not meaningful"
+                  ]
+                },
+                "validation": [
+                  "expected calibration error"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chunking_and_context",
+        "label": "Chunking and Context Management",
+        "subproblems": [
+          {
+            "id": "cross_chunk_reconciliation",
+            "label": "Cross-Chunk Reconciliation",
+            "failure_modes": [
+              {
+                "id": "cross_chunk_entity_split",
+                "failure_mode": "Same entity represented separately across chunks",
+                "typical_causes": [
+                  "limited context window",
+                  "independent chunk processing"
+                ],
+                "impact": [
+                  "duplicate nodes",
+                  "broken coreference"
+                ],
+                "mitigations": [
+                  "overlap windows",
+                  "global reconciliation pass",
+                  "document-level cluster merge"
+                ],
+                "llm_usage": {
+                  "recommended_role": "cluster_reconciler",
+                  "risks": [
+                    "aggressive global merging"
+                  ]
+                },
+                "validation": [
+                  "cross-chunk merge accuracy"
+                ]
+              },
+              {
+                "id": "cross_chunk_relation_loss",
+                "failure_mode": "Relation lost because arguments fall in different chunks",
+                "typical_causes": [
+                  "naive chunk boundaries"
+                ],
+                "impact": [
+                  "missing edges"
+                ],
+                "mitigations": [
+                  "discourse-aware chunking",
+                  "adjacent chunk bridging",
+                  "hierarchical retrieval"
+                ],
+                "llm_usage": {
+                  "recommended_role": "bridge_reasoner_over_neighbors",
+                  "risks": [
+                    "bridge hallucination"
+                  ]
+                },
+                "validation": [
+                  "edge recall"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "llm_specific_failure_modes",
+        "label": "LLM-Specific Failure Modes",
+        "subproblems": [
+          {
+            "id": "hallucination_and_schema",
+            "label": "Hallucination and Schema Compliance",
+            "failure_modes": [
+              {
+                "id": "hallucinated_fact",
+                "failure_mode": "Unsupported entity or relation generated",
+                "typical_causes": [
+                  "parametric prior leakage",
+                  "helpfulness bias"
+                ],
+                "impact": [
+                  "poisoned graph"
+                ],
+                "mitigations": [
+                  "extractive evidence requirement",
+                  "abstain option",
+                  "candidate-constrained decoding"
+                ],
+                "llm_usage": {
+                  "recommended_role": "candidate_filter_not_free_generator",
+                  "risks": [
+                    "fabricated support"
+                  ]
+                },
+                "validation": [
+                  "support-span agreement"
+                ]
+              },
+              {
+                "id": "schema_drift",
+                "failure_mode": "Output fields or labels drift across runs",
+                "typical_causes": [
+                  "weak prompt control",
+                  "unconstrained decoding"
+                ],
+                "impact": [
+                  "parser failures",
+                  "ontology drift"
+                ],
+                "mitigations": [
+                  "JSON schema",
+                  "constrained decoding",
+                  "retry with repair"
+                ],
+                "llm_usage": {
+                  "recommended_role": "structured_output_generator",
+                  "risks": [
+                    "partial schema compliance"
+                  ]
+                },
+                "validation": [
+                  "schema validity rate"
+                ]
+              },
+              {
+                "id": "prompt_sensitivity",
+                "failure_mode": "Small prompt changes cause large output shifts",
+                "typical_causes": [
+                  "instruction brittleness"
+                ],
+                "impact": [
+                  "pipeline instability"
+                ],
+                "mitigations": [
+                  "prompt freezing",
+                  "benchmark suite",
+                  "multi-prompt consensus"
+                ],
+                "llm_usage": {
+                  "recommended_role": "ensemble_member",
+                  "risks": [
+                    "high variance"
+                  ]
+                },
+                "validation": [
+                  "variance across prompts"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "evaluation_and_operations",
+        "label": "Evaluation and Operations",
+        "subproblems": [
+          {
+            "id": "evaluation_design",
+            "label": "Evaluation Design",
+            "failure_modes": [
+              {
+                "id": "local_metric_illusion",
+                "failure_mode": "Strong component metrics but weak graph utility",
+                "typical_causes": [
+                  "component-only evaluation"
+                ],
+                "impact": [
+                  "false sense of progress"
+                ],
+                "mitigations": [
+                  "end-to-end query evaluation",
+                  "task-level graph benchmarks",
+                  "human usefulness review"
+                ],
+                "llm_usage": {
+                  "recommended_role": "failure_explainer",
+                  "risks": [
+                    "overly plausible post-hoc rationalization"
+                  ]
+                },
+                "validation": [
+                  "downstream task score"
+                ]
+              },
+              {
+                "id": "ambiguity_blind_gold",
+                "failure_mode": "Single gold label hides genuinely ambiguous cases",
+                "typical_causes": [
+                  "oversimplified annotation"
+                ],
+                "impact": [
+                  "misleading error accounting"
+                ],
+                "mitigations": [
+                  "ambiguity-aware annotation",
+                  "adjudicated sets",
+                  "soft evaluation where justified"
+                ],
+                "llm_usage": {
+                  "recommended_role": "ambiguity_candidate_detector",
+                  "risks": [
+                    "marking everything ambiguous"
+                  ]
+                },
+                "validation": [
+                  "agreement under ambiguity protocol"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "operational_governance",
+            "label": "Operational Governance",
+            "failure_modes": [
+              {
+                "id": "irreversible_bad_merge",
+                "failure_mode": "Destructive merge cannot be undone",
+                "typical_causes": [
+                  "no versioning",
+                  "no audit trail"
+                ],
+                "impact": [
+                  "persistent graph corruption"
+                ],
+                "mitigations": [
+                  "versioned graph",
+                  "reversible merge ops",
+                  "audit logging"
+                ],
+                "llm_usage": {
+                  "recommended_role": "high_risk_case_flagger",
+                  "risks": [
+                    "false reassurance"
+                  ]
+                },
+                "validation": [
+                  "rollback success rate"
+                ]
+              },
+              {
+                "id": "silent_drift",
+                "failure_mode": "Data/model/schema changes silently degrade outputs",
+                "typical_causes": [
+                  "evolving corpora",
+                  "model upgrades",
+                  "prompt changes"
+                ],
+                "impact": [
+                  "unstable graph quality"
+                ],
+                "mitigations": [
+                  "frozen regression suite",
+                  "drift monitoring",
+                  "change-point alerts"
+                ],
+                "llm_usage": {
+                  "recommended_role": "drift_summary_assistant",
+                  "risks": [
+                    "missing subtle regression patterns"
+                  ]
+                },
+                "validation": [
+                  "regression delta",
+                  "change-point alerts"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
