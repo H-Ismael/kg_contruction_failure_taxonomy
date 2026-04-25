@@ -428,5 +428,3 @@ For the raw structured taxonomy data (suitable for programmatic consumption):
 6. **Shared vocabulary prevents shared blindness.** When the whole team speaks the same language about failure modes, incidents are triaged faster, design reviews are more thorough, and the gap between "it works on my examples" and "it works in production" gets smaller.
 
 ---
-
-*This taxonomy and its implementation are part of the Sales GraphRAG Knowledge Graph project -- transforming unstructured sales conversations into a queryable, governed knowledge base.*
